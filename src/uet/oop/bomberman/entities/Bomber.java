@@ -16,4 +16,9 @@ public class Bomber extends Entity {
     public void update() {
 
     }
+
+    @Override
+    public void render() {
+
+    }
 }

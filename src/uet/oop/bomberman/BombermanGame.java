@@ -12,7 +12,6 @@ import uet.oop.bomberman.entities.Entity;
 import uet.oop.bomberman.entities.Grass;
 import uet.oop.bomberman.entities.Wall;
 import uet.oop.bomberman.graphics.Sprite;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,7 +83,7 @@ public class BombermanGame extends Application {
 
     public void render() {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        stillObjects.forEach(g -> g.render(gc));
-        entities.forEach(g -> g.render(gc));
+        stillObjects.forEach(g -> g.render());
+        entities.forEach(g -> g.render());
     }
 }

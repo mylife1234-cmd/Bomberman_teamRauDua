@@ -5,9 +5,10 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
+import uet.oop.bomberman.graphics.Render;
 import uet.oop.bomberman.graphics.Sprite;
 
-public abstract class Entity {
+public abstract class Entity implements Render {
     //Tọa độ X tính từ góc trái trên trong Canvas
     protected int x;
 
@@ -22,9 +23,14 @@ public abstract class Entity {
         this.y = yUnit * Sprite.SCALED_SIZE;
         this.img = img;
     }
-
-    public void render(GraphicsContext gc) {
-        gc.drawImage(img, x, y);
-    }
+    @Override
+    public abstract void render();
+    @Override
     public abstract void update();
+    public int getX(){
+        return x;
+    }
+    public int getY(){
+        return y;
+    }
 }
