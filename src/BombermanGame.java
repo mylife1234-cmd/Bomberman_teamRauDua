@@ -1,11 +1,14 @@
 import entities.*;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import graphics.Sprite;
@@ -14,7 +17,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BombermanGame extends Application {
     
@@ -28,6 +31,7 @@ public class BombermanGame extends Application {
     private Canvas canvas;
     private List<Entity> entities = new ArrayList<>();
     private List<Entity> stillObjects = new ArrayList<>();
+    private Entity bomberman;
 
     public char map[][];
 
@@ -56,7 +60,7 @@ public class BombermanGame extends Application {
 
         createMap(new String("/levels/map.txt"));
 
-        Entity bomberman = new Bomber(1, 1, Sprite.player_right.getFxImage());
+        bomberman = new Bomber(1, 1, Sprite.player_right.getFxImage());
 
         entities.add(bomberman);
 
@@ -64,9 +68,17 @@ public class BombermanGame extends Application {
             @Override
             public void handle(long l) {
                 render();
+                entities.forEach(Entity::update);
                 scene.setOnKeyPressed(event -> {
-                    update(event);
+                    setEventScreen(event);
                 });
+//
+//                scene.setOnKeyReleased(event -> {
+//
+//                });
+
+//                bomberman.setX(bomberman.getX() + 10);
+//                bomberman.setY(bomberman.getY() + 10);
             }
         };
         timer.start();
@@ -78,7 +90,7 @@ public class BombermanGame extends Application {
         try {
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(
-                            new FileInputStream("/home/teag/demo/bomberman-starter/res/levels/map.txt"),
+                            new FileInputStream("res/levels/map.txt"),
                             Charset.forName("UTF-8")));
             int c;
             for (int i = 0; i < HEIGHT_MAP; i++) {
@@ -96,8 +108,8 @@ public class BombermanGame extends Application {
             e.printStackTrace();
         }
 
-        for (int i = 0; i < 13; i++) {
-            for (int j = 0; j < 31; j++) {
+        for (int i = 0; i < HEIGHT_MAP; i++) {
+            for (int j = 0; j < WIDTH_MAP; j++) {
                 System.out.printf(map[i][j] + "");
             }
             System.out.println();
@@ -106,12 +118,7 @@ public class BombermanGame extends Application {
         for (int i = 0; i < HEIGHT_MAP; i++) {
             for (int j = 0; j < WIDTH_MAP; j++) {
                 Entity object;
-//                if (j == 0 || j == WIDTH_MAP - 1 || i == 0 || i == HEIGHT_MAP - 1) {
-//                    object = new Wall(i, j, Sprite.wall.getFxImage());
-//                }
-//                else {
-//                    object = new Grass(i, j, Sprite.grass.getFxImage());
-//                }
+
                 if (map[i][j] == '#') {
                     object = new Wall(j, i, Sprite.wall.getFxImage());
                 }
@@ -123,15 +130,66 @@ public class BombermanGame extends Application {
                 }
                 else object = new Grass(j, i, Sprite.grass.getFxImage());
                 stillObjects.add(object);
+
+                if (map[i][j] == 'q') {
+                    object = new EnermySimple(j, i, Sprite.doll_dead.getFxImage());
+                    entities.add(object);
+                }
             }
         }
     }
 
-    public void update(KeyEvent event) {
+    public void setEventScreen(KeyEvent event) {
 //        entities.forEach(Entity::update);
-        for (Entity entity : entities) {
-            entity.update(event);
+
+//        for (Entity entity : entities) {
+//            entity.update(event);
+//        }
+
+//        for (Entity entity : entities) {
+//            int i = -1;
+//            while (++i < entities.size()) {
+//                if (!Moveable.checkToEntity(entity, stillObjects.get(i))) {
+//                    entity.setStop(true);
+//                }
+//            }
+//        }
+
+        KeyCombination keyCombinationS = new KeyCodeCombination(KeyCode.S);
+        KeyCombination keyCombinationD = new KeyCodeCombination(KeyCode.D);
+        KeyCombination keyCombinationW = new KeyCodeCombination(KeyCode.W);
+        KeyCombination keyCombinationA = new KeyCodeCombination(KeyCode.A);
+
+        if (keyCombinationS.match(event)) {
+            ((Bomber)bomberman).setStatus(Bomber.DOWN);
         }
+        else if (keyCombinationD.match(event)) {
+            ((Bomber)bomberman).setStatus(Bomber.RIGHT);
+        }
+        else if (keyCombinationW.match(event)) {
+            ((Bomber)bomberman).setStatus(Bomber.UP);
+        }
+        else if (keyCombinationA.match(event)) {
+            ((Bomber)bomberman).setStatus(Bomber.LEFT);
+        }
+        stillObjects.forEach(entity -> {
+            if (!Entity.checkToUnmove((Bomber)bomberman, (EntityUnmove) entity)) {
+                bomberman.setStop(true);
+            }
+        });
+
+        entities.forEach(entity -> {
+            if (!(entity instanceof Bomber) && !Entity.checkToUnmove((Bomber)bomberman, entity)) {
+                bomberman.setStop(true);
+//                Platform.exit();
+            }
+        });
+
+        if (!bomberman.isStop()) {
+            bomberman.move(((Bomber)bomberman).getStatus());
+        }
+        ((Bomber) bomberman).nextFrame(((Bomber)bomberman).getStatus());
+        bomberman.setStop(false);
     }
 
     public void render() {

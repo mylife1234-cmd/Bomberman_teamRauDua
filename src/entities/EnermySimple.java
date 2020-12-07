@@ -5,10 +5,9 @@ import javafx.scene.input.KeyEvent;
 
 import java.util.List;
 
-public class Grass extends EntityUnmove {
-
-    public Grass(int x, int y, Image img) {
-        super(x, y, img);
+public class EnermySimple extends EntityMove {
+    public EnermySimple(int xUnit, int yUnit, Image img) {
+        super(xUnit, yUnit, img);
     }
 
     @Override
