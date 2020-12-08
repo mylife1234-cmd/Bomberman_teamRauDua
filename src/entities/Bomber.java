@@ -2,6 +2,7 @@ package entities;
 
 import graphics.Sprite;
 import graphics.SpriteSheet;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -17,14 +18,24 @@ public class Bomber extends EntityMove implements Moveable{
     public static final int DOWN = 2;
     public static final int LEFT = 3;
     public static final int RIGHT = 1;
-    private int step = 4;
-    private int status;
-    private int frame;
+
+    private boolean check;
+    private Boom boom;
 
     public Bomber(int x, int y, Image img) {
         super( x, y, img);
         status = DOWN;
         frame = 0;
+        check = false;
+        boom = new Boom(x,y,Sprite.bomb.getFxImage());
+    }
+
+    public void setCheck(boolean check) {
+        this.check = check;
+    }
+
+    public boolean isCheck() {
+        return check;
     }
 
     public int getStatus() {
@@ -41,7 +52,7 @@ public class Bomber extends EntityMove implements Moveable{
 
     @Override
     public void update(KeyEvent event) {
-
+/*
         if (event.getCode() == KeyCode.D) {
             if (status != RIGHT || frame == 2) {
                 status = RIGHT;
@@ -107,12 +118,13 @@ public class Bomber extends EntityMove implements Moveable{
             }
             move(status);
         }
-
+*/
     }
 
     @Override
     public void update() {
         setImg(Sprite.player_down.getFxImage());
+        boom.update();
     }
 
     @Override
@@ -179,4 +191,24 @@ public class Bomber extends EntityMove implements Moveable{
         setImg(new Sprite(DEFAULT_SIZE, status % 4, frame % 3, SpriteSheet.tiles, 10, 16).getFxImage());
     }
 
+    public void plantBoom() {
+        resetBoom();
+        boom.setExplored(true);
+        boom.setCount(100);
+    }
+
+    public void resetBoom() {
+        boom.setX(x/32*32);
+        boom.setY(y/32*32);
+    }
+
+    @Override
+    public void render(GraphicsContext gc) {
+        super.render(gc);
+        if (boom != null) {
+            if (boom.isExplored()) {
+                boom.render(gc);
+            }
+        }
+    }
 }

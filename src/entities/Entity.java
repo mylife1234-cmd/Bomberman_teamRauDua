@@ -5,6 +5,8 @@ import javafx.scene.image.Image;
 import graphics.Sprite;
 import javafx.scene.input.KeyEvent;
 
+import java.util.List;
+
 public abstract class Entity implements Moveable {
 
 //    public static final double SAISO = 0.1;
@@ -18,6 +20,8 @@ public abstract class Entity implements Moveable {
 
     //check Move
     protected boolean stop;
+
+
 
     //Khởi tạo đối tượng, chuyển từ tọa độ đơn vị sang tọa độ trong canvas
     public Entity( int xUnit, int yUnit, Image img) {
@@ -62,7 +66,7 @@ public abstract class Entity implements Moveable {
         return stop;
     }
 
-    public static boolean checkToUnmove(Bomber bomber, Entity entity) {
+    public static boolean checkToUnmove(EntityMove bomber, Entity entity) {
         if (entity instanceof Grass) {
             return true;
         }
@@ -91,7 +95,7 @@ public abstract class Entity implements Moveable {
             }
         }
 
-        if ((x1 + bomber.img.getWidth() <= x2 || x1 >= x2 + entity.img.getWidth() || y1 + bomber.img.getHeight() < y2 ) || y1 > y2 + entity.img.getHeight()) {
+        if ((x1 + bomber.img.getWidth() <= x2 || x1 >= x2 + entity.img.getWidth() || y1 + bomber.img.getHeight() <= y2 ) || y1 >= y2 + entity.img.getHeight()) {
             return true;
         }
         return false;

@@ -21,8 +21,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BombermanGame extends Application {
     
-    public static final int WIDTH = 20;
-    public static final int HEIGHT = 15;
+    public static final int WIDTH = 31;
+    public static final int HEIGHT = 13;
     public static final int WIDTH_MAP = 31;
     public static final int HEIGHT_MAP = 13;
 
@@ -61,15 +61,17 @@ public class BombermanGame extends Application {
         createMap(new String("/levels/map.txt"));
 
         bomberman = new Bomber(1, 1, Sprite.player_right.getFxImage());
-
-        entities.add(bomberman);
+        ((Bomber)bomberman).setEntities(entities);
+//        entities.add(bomberman);
 
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
                 render();
+                bomberman.update();
                 entities.forEach(Entity::update);
                 scene.setOnKeyPressed(event -> {
+//                    ((Bomber)bomberman).setCheck();
                     setEventScreen(event);
                 });
 //
@@ -132,7 +134,8 @@ public class BombermanGame extends Application {
                 stillObjects.add(object);
 
                 if (map[i][j] == 'q') {
-                    object = new EnermySimple(j, i, Sprite.doll_dead.getFxImage());
+                    object = new EnermySimple(j, i, Sprite.balloom_left1.getFxImage());
+                    ((EntityMove)object).setEntities(stillObjects);
                     entities.add(object);
                 }
             }
@@ -140,25 +143,12 @@ public class BombermanGame extends Application {
     }
 
     public void setEventScreen(KeyEvent event) {
-//        entities.forEach(Entity::update);
-
-//        for (Entity entity : entities) {
-//            entity.update(event);
-//        }
-
-//        for (Entity entity : entities) {
-//            int i = -1;
-//            while (++i < entities.size()) {
-//                if (!Moveable.checkToEntity(entity, stillObjects.get(i))) {
-//                    entity.setStop(true);
-//                }
-//            }
-//        }
 
         KeyCombination keyCombinationS = new KeyCodeCombination(KeyCode.S);
         KeyCombination keyCombinationD = new KeyCodeCombination(KeyCode.D);
         KeyCombination keyCombinationW = new KeyCodeCombination(KeyCode.W);
         KeyCombination keyCombinationA = new KeyCodeCombination(KeyCode.A);
+        KeyCombination keyCombinationSpace = new KeyCodeCombination(KeyCode.SPACE);
 
         if (keyCombinationS.match(event)) {
             ((Bomber)bomberman).setStatus(Bomber.DOWN);
@@ -172,29 +162,50 @@ public class BombermanGame extends Application {
         else if (keyCombinationA.match(event)) {
             ((Bomber)bomberman).setStatus(Bomber.LEFT);
         }
+        else bomberman.setStop(true);
+
+        if (keyCombinationSpace.match(event)) {
+//            ((Bomber)bomberman)
+            ((Bomber)bomberman).plantBoom();
+        }
         stillObjects.forEach(entity -> {
             if (!Entity.checkToUnmove((Bomber)bomberman, (EntityUnmove) entity)) {
                 bomberman.setStop(true);
             }
+            entities.forEach(entity1 -> {
+                if (!entity.equals(entity1) && !Entity.checkToUnmove((EntityMove) entity1, entity)) {
+                    entity1.setStop(true);
+                }
+            });
+        });
+        entities.forEach(entity -> {
+            entity.move(((EntityMove)entity).getStatus());
         });
 
         entities.forEach(entity -> {
             if (!(entity instanceof Bomber) && !Entity.checkToUnmove((Bomber)bomberman, entity)) {
                 bomberman.setStop(true);
 //                Platform.exit();
+                entities.remove(entity);
             }
         });
+
 
         if (!bomberman.isStop()) {
             bomberman.move(((Bomber)bomberman).getStatus());
         }
         ((Bomber) bomberman).nextFrame(((Bomber)bomberman).getStatus());
+
+
         bomberman.setStop(false);
+
+
     }
 
     public void render() {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         stillObjects.forEach(g -> g.render(gc));
         entities.forEach(g -> g.render(gc));
+        bomberman.render(gc);
     }
 }
